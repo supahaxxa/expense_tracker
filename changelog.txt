@@ -1,0 +1,7 @@
+v2.1
+2025-05-25
++ added error and exception handling features
+~ used a more efficient approach in clear() function
+~ moved logs from 2024 to a separate file named 2024.csv from logs.csv file
+- removed unnecessary print statements from logger.py file
+- removed inefficient parts of code from viewer.py
