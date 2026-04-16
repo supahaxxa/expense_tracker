@@ -8,7 +8,7 @@ Expense Tracker is an open-source application mainly designed for Android to hel
 - **Detailed Logs:** Access a complete history of all your recorded transactions to keep track of every penny.
 - **Categorization:** Organize your spending into preset categories (e.g., Snacks, Transport, Utilities, Entertainment).
 - **Open Source:** Feel free to audit, fork, or contribute to the code!
-<!-- - **Monthly Insights:** View aggregated data on a month-to-month basis to identify spending trends and manage your budget better. -->
+- **Monthly Insights:** View aggregated data on a month-to-month basis to identify spending trends and manage your budget better.
 
 ## Tech Stack
 
