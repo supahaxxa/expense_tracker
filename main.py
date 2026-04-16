@@ -1,22 +1,11 @@
 import flet
 
+# global scope variables
 references = {}
-types = ["Beverages", "B&L", "Entertainment", "Household", "Others", "Restaurant", "Services", "Snacks", "Stationery",
-	"Transport", "Utility"]
-variables = {
-	"recordButtonHeight": 40,
-	"recordMarginTop": 40,
-	"recordMarginLeft": 20,
-	"recordMarginBottom": 30,
-	"recordMarginRight": 20,
-	"settingsMarginTop": 30,
-	"settingsMarginLeft": 20,
-	"settingsMarginBottom": 30,
-	"settingsMarginRight": 20,
-	"spacingOverButtonGroup": 30,
-	"widgetSpacing": 10
-}
+types = ["Beverages", "B&L", "Entertainment", "Household", "Others", "Restaurant", "Services", "Food", "Stationery", "Transport", "Utility"]
+variables = {"buttonHeight": 40, "marginLeft": 20, "marginRight": 20, "marginTop": 30, "marginBottom": 30, "widgetSpacing": 10}
 
+# helper functions to create some widgets in settings page
 def section_header(title: str):
 	return flet.Container(
 		content=flet.Text(
@@ -32,7 +21,6 @@ def divider():
 	return flet.Divider(height=1, color="#E5E5EA", trailing_indent=0)
 
 def card(*rows):
-	"""Wrap rows in a rounded white card with dividers."""
 	children = []
 	for i, row in enumerate(rows):
 		children.append(row)
@@ -95,7 +83,7 @@ def setting_row(icon: flet.IconData, icon_bg, label, key="", subtitle="", traili
 
 def add_record(amount, ftype, detail):
 	try:
-		with open(f"{variables['applicationDocumentsDirectory']}/logs.csv", 'r') as file:
+		with open(variables["applicationLogsPath"], 'r') as file:
 			next_index_to_write = len(file.read().splitlines())
 	except FileNotFoundError:
 		next_index_to_write = 0
@@ -104,10 +92,10 @@ def add_record(amount, ftype, detail):
 	line_to_write = f"{next_index_to_write},{today},{amount},{ftype},{detail}\n"
 
 	try:
-		with open(f"{variables['applicationDocumentsDirectory']}/logs.csv", 'a') as file:
+		with open(variables["applicationLogsPath"], 'a') as file:
 			file.write(line_to_write)
 	except FileNotFoundError:
-		with open(f"{variables['applicationDocumentsDirectory']}/logs.csv", 'w') as file:
+		with open(variables["applicationLogsPath"], 'w') as file:
 			file.write(line_to_write)
 
 def on_click_record_yes(event: flet.Event):
@@ -158,50 +146,122 @@ def on_click_record(event: flet.Event):
 	))
 	event.page.update()
 
-async def on_click_quit(event: flet.Event):
-	await event.page.window.destroy()
-
-def update_config(event: flet.Event):
-	lines_to_write = [f"{key},{value}\n" for key, value in variables.items()]
-
-	with open(f"{variables['applicationDocumentsDirectory']}/config.csv", 'w') as file:
-		file.write(''.join(lines_to_write))
-
-def set_io_path(event: flet.Event):
-	variables["applicationDocumentsDirectory"] = references["fileIOPathField"].current.value
-	references["fileIOPath"].current.value = references["fileIOPathField"].current.value
+def set_logs_path(event: flet.Event):
+	variables["applicationLogsPath"] = references["logsFilePathField"].current.value
+	references["applicationLogsPath"].current.value = references["logsFilePathField"].current.value
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_record_margin_top(event: flet.Event):
-	variables["recordMarginTop"] = int(references["recordMarginTopField"].current.value)
-	references["recordMarginTop"].current.value = f"{references['recordMarginTopField'].current.value} px"
+def set_config_path(event: flet.Event):
+	variables["applicationConfigPath"] = references["configFilePathField"].current.value
+	references["applicationConfigPath"].current.value = references["configFilePathField"].current.value
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_record_margin_left(event: flet.Event):
-	variables["recordMarginLeft"] = int(references["recordMarginLeftField"].current.value)
-	references["recordMarginLeft"].current.value = f"{references['recordMarginLeftField'].current.value} px"
+def set_button_height(event: flet.Event):
+	variables["buttonHeight"] = int(references["buttonHeightField"].current.value)
+	references["buttonHeight"].current.value = f"{references['buttonHeightField'].current.value} px"
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_record_margin_bottom(event: flet.Event):
-	variables["recordMarginBottom"] = int(references["recordMarginBottomField"].current.value)
-	references["recordMarginBottom"].current.value = f"{references['recordMarginBottomField'].current.value} px"
+def dialog_change_button_height(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set button height"),
+		content=flet.TextField(
+			label="Value",
+			border=flet.InputBorder.UNDERLINE,
+			value=str(variables["buttonHeight"]),
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Confirm", on_click=set_button_height)]
+	))
+	references["buttonHeightField"] = textfield_ref
+
+def set_margin_left(event: flet.Event):
+	variables["marginLeft"] = int(references["marginLeftField"].current.value)
+	references["marginLeft"].current.value = f"{references['marginLeftField'].current.value} px"
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_record_margin_right(event: flet.Event):
-	variables["recordMarginRight"] = int(references["recordMarginRightField"].current.value)
-	references["recordMarginRight"].current.value = f"{references['recordMarginRightField'].current.value} px"
+def dialog_change_margin_left(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set left margin size"),
+		content=flet.TextField(
+			label="Value",
+			border=flet.InputBorder.UNDERLINE,
+			value=str(variables["marginLeft"]),
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Confirm", on_click=set_margin_left)]
+	))
+	references["marginLeftField"] = textfield_ref
+
+def set_margin_right(event: flet.Event):
+	variables["marginRight"] = int(references["marginRightField"].current.value)
+	references["marginRight"].current.value = f"{references['marginRightField'].current.value} px"
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_record_button_height(event: flet.Event):
-	variables["recordButtonHeight"] = int(references["recordButtonHeightField"].current.value)
-	references["recordButtonHeight"].current.value = f"{references['recordButtonHeightField'].current.value} px"
+def dialog_change_margin_right(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set right margin size"),
+		content=flet.TextField(
+			label="Value",
+			border=flet.InputBorder.UNDERLINE,
+			value=str(variables["marginRight"]),
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Confirm", on_click=set_margin_right)]
+	))
+	references["marginRightField"] = textfield_ref
+
+def set_margin_top(event: flet.Event):
+	variables["marginTop"] = int(references["marginTopField"].current.value)
+	references["marginTop"].current.value = f"{references['marginTopField'].current.value} px"
 	event.page.pop_dialog()
 	event.page.update()
+
+def dialog_change_margin_top(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set top margin size"),
+		content=flet.TextField(
+			label="Value",
+			border=flet.InputBorder.UNDERLINE,
+			value=str(variables["marginTop"]),
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Confirm", on_click=set_margin_top)]
+	))
+	references["marginTopField"] = textfield_ref
+
+def set_margin_bottom(event: flet.Event):
+	variables["marginBottom"] = int(references["marginBottomField"].current.value)
+	references["marginBottom"].current.value = f"{references['marginBottomField'].current.value} px"
+	event.page.pop_dialog()
+	event.page.update()
+
+def dialog_change_margin_bottom(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set bottom margin size"),
+		content=flet.TextField(
+			label="Value",
+			border=flet.InputBorder.UNDERLINE,
+			value=str(variables["marginBottom"]),
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Confirm", on_click=set_margin_bottom)]
+	))
+	references["marginBottomField"] = textfield_ref
 
 def set_widget_spacing(event: flet.Event):
 	variables["widgetSpacing"] = int(references["widgetSpacingField"].current.value)
@@ -209,202 +269,22 @@ def set_widget_spacing(event: flet.Event):
 	event.page.pop_dialog()
 	event.page.update()
 
-def set_spacing_over_button_group(event: flet.Event):
-	variables["spacingOverButtonGroup"] = int(references["spacingOverButtonGroupField"].current.value)
-	references["spacingOverButtonGroup"].current.value = f"{references['spacingOverButtonGroupField'].current.value} px"
-	event.page.pop_dialog()
-	event.page.update()
-
-def set_settings_margin_top(event: flet.Event):
-	variables["settingsMarginTop"] = int(references["settingsMarginTopField"].current.value)
-	references["settingsMarginTop"].current.value = f"{references['settingsMarginTopField'].current.value} px"
-	event.page.pop_dialog()
-	event.page.update()
-
-def set_settings_margin_left(event: flet.Event):
-	variables["settingsMarginLeft"] = int(references["settingsMarginLeftField"].current.value)
-	references["settingsMarginLeft"].current.value = f"{references['settingsMarginLeftField'].current.value} px"
-	event.page.pop_dialog()
-	event.page.update()
-
-def set_settings_margin_bottom(event: flet.Event):
-	variables["settingsMarginBottom"] = int(references["settingsMarginBottomField"].current.value)
-	references["settingsMarginBottom"].current.value = f"{references['settingsMarginBottomField'].current.value} px"
-	event.page.pop_dialog()
-	event.page.update()
-
-def set_settings_margin_right(event: flet.Event):
-	variables["settingsMarginRight"] = int(references["settingsMarginRightField"].current.value)
-	references["settingsMarginRight"].current.value = f"{references['settingsMarginRightField'].current.value} px"
-	event.page.pop_dialog()
-	event.page.update()
-
-def dialog_change_settings_margin_right(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["settingsMarginRight"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_settings_margin_right)]
-	))
-	references["settingsMarginRightField"] = textfield_ref
-
-def dialog_change_settings_margin_bottom(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["settingsMarginBottom"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_settings_margin_bottom)]
-	))
-	references["settingsMarginBottomField"] = textfield_ref
-
-def dialog_change_settings_margin_left(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["settingsMarginLeft"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_settings_margin_left)]
-	))
-	references["settingsMarginLeftField"] = textfield_ref
-
-def dialog_change_settings_margin_top(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["settingsMarginTop"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_settings_margin_top)]
-	))
-	references["settingsMarginTopField"] = textfield_ref
-
-def dialog_change_spacing_over_button_group(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set spacing"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["spacingOverButtonGroup"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_spacing_over_button_group)]
-	))
-	references["spacingOverButtonGroup"] = textfield_ref
-
 def dialog_change_widget_spacing(event: flet.Event):
 	textfield_ref = flet.Ref[flet.TextField]()
 	event.page.show_dialog(flet.AlertDialog(
 		modal=True,
-		title=flet.Text("Set spacing"),
+		title=flet.Text("Set space between widgets"),
 		content=flet.TextField(
 			label="Value",
 			border=flet.InputBorder.UNDERLINE,
 			value=str(variables["widgetSpacing"]),
 			ref=textfield_ref
 		),
-		actions=[flet.TextButton("Set", on_click=set_widget_spacing)]
+		actions=[flet.TextButton("Confirm", on_click=set_widget_spacing)]
 	))
 	references["widgetSpacingField"] = textfield_ref
 
-def dialog_change_record_button_height(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set height"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["recordButtonHeight"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_record_button_height)]
-	))
-	references["recordButtonHeightField"] = textfield_ref
-
-def dialog_change_record_margin_right(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["recordMarginRight"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_record_margin_right)]
-	))
-	references["recordMarginRightField"] = textfield_ref
-
-def dialog_change_record_margin_bottom(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["recordMarginBottom"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_record_margin_bottom)]
-	))
-	references["recordMarginBottomField"] = textfield_ref
-
-def dialog_change_record_margin_left(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["recordMarginLeft"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_record_margin_left)]
-	))
-	references["recordMarginLeftField"] = textfield_ref
-
-def dialog_change_record_margin_top(event: flet.Event):
-	textfield_ref = flet.Ref[flet.TextField]()
-	event.page.show_dialog(flet.AlertDialog(
-		modal=True,
-		title=flet.Text("Set margin"),
-		content=flet.TextField(
-			label="Value",
-			border=flet.InputBorder.UNDERLINE,
-			value=str(variables["recordMarginTop"]),
-			ref=textfield_ref
-		),
-		actions=[flet.TextButton("Set", on_click=set_record_margin_top)]
-	))
-	references["recordMarginTopField"] = textfield_ref
-
-def dialog_change_io_path(event: flet.Event):
+def dialog_change_logs_path(event: flet.Event):
 	textfield_ref = flet.Ref[flet.TextField]()
 	event.page.show_dialog(flet.AlertDialog(
 		modal=True,
@@ -412,16 +292,34 @@ def dialog_change_io_path(event: flet.Event):
 		content=flet.TextField(
 			label="Path",
 			border=flet.InputBorder.UNDERLINE,
-			value=f"{variables['applicationDocumentsDirectory']}",
+			value=variables["applicationLogsPath"],
 			ref=textfield_ref
 		),
-		actions=[flet.TextButton("Set", on_click=set_io_path)]
+		actions=[flet.TextButton("Set", on_click=set_logs_path)]
 	))
-	references["fileIOPathField"] = textfield_ref
+	references["logsFilePathField"] = textfield_ref
+
+def dialog_change_config_path(event: flet.Event):
+	textfield_ref = flet.Ref[flet.TextField]()
+	event.page.show_dialog(flet.AlertDialog(
+		modal=True,
+		title=flet.Text("Set path"),
+		content=flet.TextField(
+			label="Path",
+			border=flet.InputBorder.UNDERLINE,
+			value=variables["applicationConfigPath"],
+			ref=textfield_ref
+		),
+		actions=[flet.TextButton("Set", on_click=set_config_path)]
+	))
+	references["configFilePathField"] = textfield_ref
 
 def read_logs() -> list[list[str]]:
-	with open(f"{variables['applicationDocumentsDirectory']}/logs.csv", 'r') as file:
-		logs = file.read().strip('\n').split('\n')
+	try:
+		with open(variables["applicationLogsPath"], 'r') as file:
+			logs = file.read().strip('\n').split('\n')
+	except FileNotFoundError:
+		logs = ["0,19000101T0000,0,0,None"]
 
 	return [*map(lambda x: x.split(','), logs)]
 
@@ -442,7 +340,7 @@ def edit_mode_on(event: flet.Event):
 def build_logs_table(thead: list[str], tbody: list[list[str]]) -> flet.DataTable:
 	head_row, body_rows = [], []
 	for cell in thead:
-		cell_control = flet.Text(cell)
+		cell_control = flet.Text(cell, weight=flet.FontWeight.W_900)
 		cell_control.color = flet.Colors.BLACK
 		cell_control = flet.DataColumn(label=cell_control)
 		head_row.append(cell_control)
@@ -467,7 +365,7 @@ def build_logs_table(thead: list[str], tbody: list[list[str]]) -> flet.DataTable
 
 	return table
 
-def save_logs(event: flet.Event):
+def save_logs(event: flet.Event, save_path = str()):
 	i = j = 0
 	row, rows = [], []
 	while True:
@@ -485,181 +383,151 @@ def save_logs(event: flet.Event):
 			break
 		i += 1
 
-	with open(f"{variables['applicationDocumentsDirectory']}/logs.csv", 'w') as file:
-		file.write(''.join(rows))
+	if save_path:
+		with open(f"{save_path}/logs.csv", 'w') as file:
+			file.write(''.join(rows))
+	else:
+		with open(variables["applicationLogsPath"], 'w') as file:
+			file.write(''.join(rows))
 
-async def main(page: flet.Page):
-	# ── Initializing system ────────────────────────────────
-	storage_paths = flet.StoragePaths()
+def save_config(event: flet.Event, save_path = str()):
+	lines_to_write = [f"{key},{value}\n" for key, value in variables.items()]
 
-	for label, method in [
-		("applicationCacheDirectory", storage_paths.get_application_cache_directory),
-		("applicationDocumentsDirectory", storage_paths.get_application_documents_directory),
-		("applicationSupportDirectory", storage_paths.get_application_support_directory),
-		("downloadsDirectory", storage_paths.get_downloads_directory),
-		("externalCacheDirectories", storage_paths.get_external_cache_directories),
-		("externalStorageDirectories", storage_paths.get_external_storage_directories),
-		("libraryDirectory", storage_paths.get_library_directory),
-		("externalStorageDirectory", storage_paths.get_external_storage_directory),
-		("temporaryDirectory", storage_paths.get_temporary_directory),
-		("consoleLogFilename", storage_paths.get_console_log_filename),
-	]:
-		try:
-			value = await method()
-		except flet.FletUnsupportedPlatformException as e:
-			value = f"Not supported: {e}"
-		except Exception as e:
-			value = f"Error: {e}"
-		else:
-			if isinstance(value, list):
-				value = ", ".join(value)
-			elif value is None:
-				value = "Unavailable"
-		variables[label] = value
+	if save_path:
+		with open(f"{save_path}/config.csv", 'w') as file:
+			file.write(''.join(lines_to_write))
+	else:
+		with open(variables["applicationConfigPath"], 'w') as file:
+			file.write(''.join(lines_to_write))
 
-	try:
-		with open(f"{variables['applicationDocumentsDirectory']}/config.csv", 'r') as file:
-			lines = file.read().strip().split('\n')
-		for variable in lines:
-			varname, val = variable.split(',')
-			if val.isnumeric():
-				variables[varname] = int(val)
-			else:
-				variables[varname] = val
-	except FileNotFoundError:
-		pass
+def time_format_transform(yyyymm: str):
+	months_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+	if len(yyyymm) == 6:
+		new_format = yyyymm[:4] + ", " + months_list[int(yyyymm[4:])-1]
+	else:
+		new_format = yyyymm[:4] + str(months_list.index(yyyymm[6:])+1).zfill(2)
+	return new_format
 
-	page.title = "Expense Tracker"
-	page.bgcolor = "#F8F9FF"
-	page.window.width, page.window.height = 460, 950
+def aggregate_logs() -> dict:
+	default_pairs = {fi: 0 for fi in types}
+	logs = read_logs()
+	result = {"190001": default_pairs}
 
-	# ── Record section ─────────────────────────────────────
+	for row in logs:
+		month_key = row[1][:6]
+		result.setdefault(month_key, default_pairs.copy())
+		result[month_key][types[int(row[3])]] += int(row[2])
+
+	return result
+
+def build_summary_table(month_data: dict) -> flet.DataTable:
+	table_columns = []
+	table_rows = []
+	total = 0
+	for dp in ["CATEGORY", "AMOUNT"]:
+		dpo = flet.Text(dp)
+		dpo.weight = flet.FontWeight.W_900
+		dpo.color = flet.Colors.BLACK
+		dpo = flet.DataColumn(label=dpo)
+		table_columns.append(dpo)
+	for key, value in month_data.items():
+		total += int(value)
+		c1 = flet.Text(key)
+		c2 = flet.Text(value)
+		c1.color = c2.color = flet.Colors.BLACK
+		c1, c2 = flet.DataCell(c1), flet.DataCell(c2)
+		table_rows.append(flet.DataRow(cells=[c1, c2]))
+	c1, c2 = flet.Text("Total"), flet.Text(str(total))
+	c1.color = c2.color = flet.Colors.BLACK
+	c1, c2 = flet.DataCell(c1), flet.DataCell(c2)
+	table_rows.append(flet.DataRow(cells=[c1, c2]))
+
+	table = flet.DataTable(
+		column_spacing=10,
+		columns=table_columns,
+		rows=table_rows
+	)
+
+	return table
+
+def change_summary_table(event: flet.Event):
+	month = time_format_transform(event.control.value)
+	event.page.controls[0].controls[2] = build_summary_table(aggregate_logs()[month])
+	event.page.update()
+
+async def export_logs(event: flet.Event):
+	logs_file_path = await flet.FilePicker().get_directory_path() or ""
+	save_logs(event, logs_file_path)
+
+async def export_config(event: flet.Event):
+	config_file_path = await flet.FilePicker().get_directory_path() or ""
+	save_config(event, config_file_path)
+
+# main page building functions
+def build_record_page() -> flet.ListView:
 	ref_amount, ref_error_amount = flet.Ref[flet.TextField](), flet.Ref[flet.Text]()
-	text_amount = flet.Text("How much have you spent?", color=flet.Colors.BLACK)
-	textfield_amount = flet.TextField(label="Amount", border=flet.InputBorder.UNDERLINE, color=flet.Colors.BLACK,
-		ref=ref_amount)
-	text_amount_error = flet.Text("", color=flet.Colors.RED, ref=ref_error_amount)
+	text_amount = flet.Text(
+		color=flet.Colors.BLACK,
+		value="How much have you spent?"
+	)
+	textfield_amount = flet.TextField(
+		border=flet.InputBorder.UNDERLINE,
+		color=flet.Colors.BLACK,
+		label="Amount",
+		ref=ref_amount
+	)
+	text_amount_error = flet.Text(
+		color=flet.Colors.RED,
+		ref=ref_error_amount,
+		value=""
+	)
 	references["textfieldAmount"], references["errorAmount"] = ref_amount, ref_error_amount
 
 	ref_type, ref_error_type = flet.Ref[flet.Dropdown](), flet.Ref[flet.Text]()
-	text_type = flet.Text("Which category you spent on?", color=flet.Colors.BLACK)
-	dropdown_type = flet.Dropdown(label="Type", color="#000000", menu_height=300,
-		options=[*map(lambda x: flet.dropdown.Option(x), types)], ref=ref_type)
-	text_type_error = flet.Text("", color=flet.Colors.RED, ref=ref_error_type)
+	text_type = flet.Text(
+		color=flet.Colors.BLACK,
+		value="Which category you spent on?"
+	)
+	dropdown_type = flet.Dropdown(
+		color="#000000",
+		label="Type",
+		menu_height=300,
+		options=[*map(lambda x: flet.dropdown.Option(x), types)],
+		ref=ref_type
+	)
+	text_type_error = flet.Text(
+		color=flet.Colors.RED,
+		ref=ref_error_type,
+		value=""
+	)
 	references["dropdownType"], references["errorType"] = ref_type, ref_error_type
 
 	ref_detail, ref_error_detail = flet.Ref[flet.TextField](), flet.Ref[flet.Text]()
-	text_detail = flet.Text("Where have you spent?", color=flet.Colors.BLACK)
-	textfield_detail = flet.TextField(label="Detail", border=flet.InputBorder.UNDERLINE, color=flet.Colors.BLACK,
-		ref=ref_detail)
-	text_detail_error = flet.Text("", color=flet.Colors.RED, ref=ref_error_detail)
+	text_detail = flet.Text(
+		color=flet.Colors.BLACK,
+		value="Where have you spent?"
+	)
+	textfield_detail = flet.TextField(
+		border=flet.InputBorder.UNDERLINE,
+		color=flet.Colors.BLACK,
+		label="Detail",
+		ref=ref_detail
+	)
+	text_detail_error = flet.Text(
+		color=flet.Colors.RED,
+		ref=ref_error_detail,
+		value=""
+	)
 	references["textfieldDetail"], references["errorDetail"] = ref_detail, ref_error_detail
 
-	button_record = flet.Button("Record", bgcolor="#36618E", color="#FFFFFF", height=variables["recordButtonHeight"],
-		on_click=on_click_record)
-	button_quit = flet.Button("Quit", bgcolor="#EA4335", color="#FFFFFF", height=variables["recordButtonHeight"],
-		on_click=on_click_quit)
-
-	# ── Logs section ───────────────────────────────────────
-	button_save_logs = flet.Button("Save Logs", icon=flet.Icons.SAVE, bgcolor="#36618E", color="#FFFFFF", height=40,
-		on_click=save_logs)
-	table_logs = flet.Row(
-		scroll=flet.ScrollMode.AUTO,
-		controls=[build_logs_table(["SL", "TIME", "AMOUNT", "TYPE", "DETAIL"], read_logs())]
+	button_record = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content="Record",
+		height=variables["buttonHeight"],
+		on_click=on_click_record,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
 	)
-
-	# ── Settings section ───────────────────────────────────
-	record_section = flet.Column(
-		[
-			section_header("Record"),
-			card(
-				setting_row(
-					flet.Icons.LANGUAGE, "#34C759", "File I/O Path",
-					key="fileIOPath",
-					subtitle=f"{variables['applicationDocumentsDirectory']}",
-					on_click=dialog_change_io_path
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#007AFF", "Margin Top",
-					key="recordMarginTop",
-					subtitle=f"{variables['recordMarginTop']} px",
-					on_click=dialog_change_record_margin_top
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#FF9500", "Margin Left",
-					key="recordMarginLeft",
-					subtitle=f"{variables['recordMarginLeft']} px",
-					on_click=dialog_change_record_margin_left
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#FF3B30", "Margin Bottom",
-					key="recordMarginBottom",
-					subtitle=f"{variables['recordMarginBottom']} px",
-					on_click=dialog_change_record_margin_bottom
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#636366", "Margin Right",
-					key="recordMarginRight",
-					subtitle=f"{variables['recordMarginRight']} px",
-					on_click=dialog_change_record_margin_right
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#5856D6", "Button Height",
-					key="recordButtonHeight",
-					subtitle=f"{variables['recordButtonHeight']} px",
-					on_click=dialog_change_record_button_height
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#FF2D55", "Widget Spacing",
-					key="widgetSpacing",
-					subtitle=f"{variables['widgetSpacing']} px",
-					on_click=dialog_change_widget_spacing
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#FF3B30", "Spacing over Button Group",
-					key="spacingOverButtonGroup",
-					subtitle=f"{variables['spacingOverButtonGroup']} px",
-					on_click=dialog_change_spacing_over_button_group
-				)
-			),
-		],
-		spacing=0,
-	)
-
-	settings_section = flet.Column(
-		[
-			section_header("Settings"),
-			card(
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#30B0C7", "Margin Top",
-					key="settingsMarginTop",
-					subtitle=f"{variables['settingsMarginTop']} px",
-					on_click=dialog_change_settings_margin_top
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#34C759", "Margin Left",
-					key="settingsMarginLeft",
-					subtitle=f"{variables['settingsMarginLeft']} px",
-					on_click=dialog_change_settings_margin_left
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#007AFF", "Margin Bottom",
-					key="settingsMarginBottom",
-					subtitle=f"{variables['settingsMarginBottom']} px",
-					on_click=dialog_change_settings_margin_bottom
-				),
-				setting_row(
-					flet.Icons.STRAIGHTEN, "#FF9500", "Margin Right",
-					key="settingsMarginRight",
-					subtitle=f"{variables['settingsMarginRight']} px",
-					on_click=dialog_change_settings_margin_right
-				)
-			)
-		]
-	)
-
-	button_save_settings = flet.Button("Save Settings", icon=flet.Icons.SAVE, bgcolor="#36618E", color="#FFFFFF",
-		height=40, on_click=update_config)
 
 	page_record = [
 		text_amount,
@@ -672,84 +540,261 @@ async def main(page: flet.Page):
 		textfield_detail,
 		text_detail_error,
 		flet.Container(height=30),
-		button_record,
-		button_quit
-	]
-	page_logs = [
-		button_save_logs,
-		table_logs
-	]
-	page_settings = [
-		record_section,
-		settings_section,
-		button_save_settings
+		button_record
 	]
 
-	page.add(flet.ListView(
+	return flet.ListView(
 		page_record,
+		spacing=variables["widgetSpacing"],
+		expand_loose=True,
+		margin=flet.Margin.only(
+			left=variables["marginLeft"],
+			right=variables["marginRight"],
+			top=variables["marginTop"],
+			bottom=variables["marginBottom"]
+		)
+	)
+
+def build_query_page(month = "190001"):
+	label_months = flet.Text(
+		color=flet.Colors.BLACK,
+		value="Select a month"
+	)
+	dropdown_months = flet.Dropdown(
+		color=flet.Colors.BLACK,
+		label="Month",
+		on_select=change_summary_table,
+		options=[*map(lambda a: flet.dropdown.Option(time_format_transform(a)), aggregate_logs().keys())]
+	)
+	dropdown_months.options[0].disabled = True
+	dropdown_months.value = month
+
+	table_summary = build_summary_table(aggregate_logs()[dropdown_months.value])
+
+	page_query = [
+		label_months,
+		dropdown_months,
+		table_summary
+	]
+
+	return flet.ListView(
+		page_query,
+		spacing=variables["widgetSpacing"],
+		expand_loose=True,
+		margin=flet.Margin.only(
+			left=variables["marginLeft"],
+			right=variables["marginRight"],
+			top=variables["marginTop"],
+			bottom=variables["marginBottom"]
+		)
+	)
+
+def build_logs_page():
+	button_save_logs = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content="Save",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.SAVE,
+		on_click=save_logs,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
+	button_export_logs = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content="Export",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.FILE_UPLOAD,
+		on_click=export_logs,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
+	table_logs = flet.Row(
+		controls=[build_logs_table(["SL", "TIME", "AMOUNT", "TYPE", "DETAIL"], read_logs())],
+		scroll=flet.ScrollMode.AUTO
+	)
+
+	page_logs = [
+		flet.Row(controls=[button_save_logs, button_export_logs], intrinsic_height=True),
+		flet.ListView([table_logs], expand=True)
+	]
+
+	return flet.Column(
+		controls=page_logs,
 		spacing=variables["widgetSpacing"],
 		expand=True,
 		margin=flet.Margin.only(
-			left=variables["recordMarginLeft"],
-			right=variables["recordMarginRight"],
-			top=variables["recordMarginTop"],
-			bottom=variables["recordMarginBottom"]
+			left=variables["marginLeft"],
+			right=variables["marginRight"],
+			top=variables["marginTop"],
+			bottom=variables["marginBottom"]
 		)
-	))
+	)
 
-	def change_page(event: flet.Event):
-		idn = event.page.navigation_bar.selected_index
-		if idn == 0:
-			event.page.clean()
-			event.page.add(flet.ListView(
-				page_record,
-				spacing=variables["widgetSpacing"],
-				expand=True,
-				margin=flet.Margin.only(
-					left=variables["recordMarginLeft"],
-					right=variables["recordMarginRight"],
-					top=variables["recordMarginTop"],
-					bottom=variables["recordMarginBottom"]
-				)
-			))
-		elif idn == 1:
-			event.page.clean()
-			event.page.add(flet.ListView(
-				page_logs,
-				spacing=variables["widgetSpacing"],
-				expand=True,
-				margin=flet.Margin.only(
-					left=20,
-					right=20,
-					top=30,
-					bottom=30
-				)
-			))
-		else:
-			event.page.clean()
-			event.page.add(flet.ListView(
-				page_settings,
-				spacing=variables["widgetSpacing"],
-				expand=True,
-				margin=flet.Margin.only(
-					left=variables["settingsMarginLeft"],
-					right=variables["settingsMarginRight"],
-					top=variables["settingsMarginTop"],
-					bottom=variables["settingsMarginBottom"]
-				)
-			))
+def build_settings_page():
+	button_save_config = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content="Save",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.SAVE,
+		on_click=save_config,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
+	button_export_config = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content="Export",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.FILE_UPLOAD,
+		on_click=export_config,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
 
-		event.page.update()
+	interface_section = flet.Column([
+		section_header("Interface"),
+		card(
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#34C759", "Button height",
+				key="buttonHeight",
+				subtitle=f"{variables['buttonHeight']} px",
+				on_click=dialog_change_button_height
+			),
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#007AFF", "Margin - left",
+				key="marginLeft",
+				on_click=dialog_change_margin_left,
+				subtitle=f"{variables['marginLeft']} px"
+			),
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#FF9500", "Margin - right",
+				key="marginRight",
+				on_click=dialog_change_margin_right,
+				subtitle=f"{variables['marginRight']} px"
+			),
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#FF3B30", "Margin - top",
+				key="marginTop",
+				on_click=dialog_change_margin_top,
+				subtitle=f"{variables['marginTop']} px"
+			),
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#636366", "Margin - bottom",
+				key="marginBottom",
+				on_click=dialog_change_margin_bottom,
+				subtitle=f"{variables['marginBottom']} px"
+			),
+			setting_row(
+				flet.Icons.STRAIGHTEN, "#5856D6", "Widget spacing",
+				key="widgetSpacing",
+				subtitle=f"{variables['widgetSpacing']} px",
+				on_click=dialog_change_widget_spacing
+			)
+		)
+	])
+
+	system_section = flet.Column([
+		section_header("Settings"),
+		card(
+			setting_row(
+				flet.Icons.LANGUAGE, "#FF2D55", "Logs file path",
+				key="applicationLogsPath",
+				subtitle=variables["applicationLogsPath"],
+				on_click=dialog_change_logs_path
+			),
+			setting_row(
+				flet.Icons.LANGUAGE, "#30B0C7", "Config file path",
+				key="applicationConfigPath",
+				subtitle=variables["applicationConfigPath"],
+				on_click=dialog_change_config_path
+			)
+		)
+	])
+
+	page_settings = [
+		flet.Row(controls=[button_save_config, button_export_config], intrinsic_height=True),
+		flet.ListView([interface_section, system_section], expand=True)
+	]
+
+	return flet.Column(
+		controls=page_settings,
+		spacing=variables["widgetSpacing"],
+		expand=True,
+		margin=flet.Margin.only(
+			left=variables["marginLeft"],
+			right=variables["marginRight"],
+			top=variables["marginTop"],
+			bottom=variables["marginBottom"]
+		)
+	)
+
+# function to facilitate page navigation
+def change_page(event: flet.Event):
+	idn = event.page.navigation_bar.selected_index
+	if idn == 0:
+		event.page.clean()
+		event.page.add(build_record_page())
+	elif idn == 1:
+		event.page.clean()
+		event.page.add(build_query_page())
+	elif idn == 2:
+		event.page.clean()
+		event.page.add(build_logs_page())
+	else:
+		event.page.clean()
+		event.page.add(build_settings_page())
+
+	event.page.update()
+
+async def main(page: flet.Page):
+	storage_paths = flet.StoragePaths()
+
+	# code block to get the allocated Documents directory for the application
+	try:
+		value = await storage_paths.get_application_documents_directory()
+	except flet.FletUnsupportedPlatformException as e:
+		value = f"Not supported: {e}"
+	except Exception as e:
+		value = f"Error: {e}"
+	else:
+		if isinstance(value, list):
+			value = ", ".join(value)
+		elif value is None:
+			value = "Unavailable"
+	variables["applicationLogsPath"] = f"{value}/logs.csv"
+	variables["applicationConfigPath"] = f"{value}/config.csv"
+
+	# code block to load the saved application configuration variables
+	try:
+		with open(variables['applicationConfigPath'], 'r') as file:
+			lines = file.read().strip().split('\n')
+		for variable in lines:
+			varname, val = variable.split(',')
+			if val.isnumeric():
+				variables[varname] = int(val)
+			else:
+				variables[varname] = val
+	except FileNotFoundError:
+		pass
+
+	# basic setup of the window
+	page.title = "Expense Tracker"
+	page.bgcolor = "#F8F9FF"
+
+	page.add(build_record_page())
 
 	page.navigation_bar = flet.NavigationBar(
 		destinations=[
-			flet.NavigationBarDestination(icon=flet.Icons.EDIT_OUTLINED, label="Record"),
-			flet.NavigationBarDestination(icon=flet.Icons.SD_STORAGE_OUTLINED, label="Logs"),
+			flet.NavigationBarDestination(icon=flet.Icons.EDIT, label="Record"),
+			flet.NavigationBarDestination(icon=flet.Icons.SEARCH, label="Query"),
+			flet.NavigationBarDestination(icon=flet.Icons.DESCRIPTION, label="Logs"),
 			flet.NavigationBarDestination(icon=flet.Icons.SETTINGS, label="Settings")
 		],
 		on_change=change_page
 	)
-
 	page.update()
 
 flet.run(main)
