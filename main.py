@@ -2,8 +2,10 @@ import flet
 
 # global scope variables
 references = {}
-types = ["Beverages", "B&L", "Entertainment", "Household", "Others", "Restaurant", "Services", "Food", "Stationery", "Transport", "Utility"]
-variables = {"buttonHeight": 40, "marginLeft": 20, "marginRight": 20, "marginTop": 30, "marginBottom": 30, "widgetSpacing": 10}
+types = ["Beverages", "B&L", "Entertainment", "Household", "Others", "Restaurant", "Services", "Food", "Stationery",
+	"Transport", "Utility"]
+variables = {"buttonHeight": 40, "marginLeft": 20, "marginRight": 20, "marginTop": 30, "marginBottom": 30,
+	"widgetSpacing": 10}
 
 # helper functions to create some widgets in settings page
 def section_header(title: str):
@@ -452,7 +454,7 @@ def build_summary_table(month_data: dict) -> flet.DataTable:
 
 def change_summary_table(event: flet.Event):
 	month = time_format_transform(event.control.value)
-	event.page.controls[0].controls[2] = build_summary_table(aggregate_logs()[month])
+	event.page.controls[0].controls[2] = flet.ListView([build_summary_table(aggregate_logs()[month])], expand=True)
 	event.page.update()
 
 async def export_logs(event: flet.Event):
@@ -574,13 +576,13 @@ def build_query_page(month = "190001"):
 	page_query = [
 		label_months,
 		dropdown_months,
-		table_summary
+		flet.ListView([table_summary], expand=True)
 	]
 
-	return flet.ListView(
-		page_query,
+	return flet.Column(
+		controls=page_query,
 		spacing=variables["widgetSpacing"],
-		expand_loose=True,
+		expand=True,
 		margin=flet.Margin.only(
 			left=variables["marginLeft"],
 			right=variables["marginRight"],
