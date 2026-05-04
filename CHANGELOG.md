@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v1.1.1 - 2026/05/04
+
+### Fixed
+
+- The spill of the table in `Query` page beyond the visible screen. Just made it scrollable.
+
 ## v1.1.0 - 2026/04/16
 
 ### Added
