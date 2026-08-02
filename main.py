@@ -6,6 +6,7 @@ types = ["Beverages", "B&L", "Entertainment", "Household", "Others", "Restaurant
 	"Transport", "Utility"]
 variables = {"buttonHeight": 40, "marginLeft": 20, "marginRight": 20, "marginTop": 30, "marginBottom": 30,
 	"widgetSpacing": 10}
+logs_page = max_logs_page = 0
 
 # helper functions to create some widgets in settings page
 def section_header(title: str):
@@ -346,7 +347,7 @@ def build_logs_table(thead: list[str], tbody: list[list[str]]) -> flet.DataTable
 		cell_control.color = flet.Colors.BLACK
 		cell_control = flet.DataColumn(label=cell_control)
 		head_row.append(cell_control)
-	for row in tbody:
+	for row in tbody[logs_page*50:logs_page*50+50]:
 		table_row = []
 		i = 0
 		for cell in row:
@@ -455,6 +456,37 @@ def build_summary_table(month_data: dict) -> flet.DataTable:
 def change_summary_table(event: flet.Event):
 	month = time_format_transform(event.control.value)
 	event.page.controls[0].controls[2] = flet.ListView([build_summary_table(aggregate_logs()[month])], expand=True)
+	event.page.update()
+
+def to_prev_page(event: flet.Event):
+	global logs_page, max_logs_page
+	if logs_page:
+		logs_page -= 1
+
+	event.page.controls[0].controls[1].controls[1].content = f"{logs_page + 1} / {max_logs_page}"
+
+	table_logs1 = flet.ListView([flet.Row(
+		controls=[build_logs_table(["SL", "TIME", "AMOUNT", "TYPE", "DETAIL"], read_logs())],
+		scroll=flet.ScrollMode.AUTO
+	)], expand=True)
+	event.page.controls[0].controls[2] = table_logs1
+
+	event.page.update()
+
+def to_next_page(event: flet.Event):
+	global logs_page, max_logs_page
+	logs_page += 1
+	if max_logs_page == logs_page:
+		logs_page -= 1
+
+	event.page.controls[0].controls[1].controls[1].content = f"{logs_page + 1} / {max_logs_page}"
+
+	table_logs1 = flet.ListView([flet.Row(
+		controls=[build_logs_table(["SL", "TIME", "AMOUNT", "TYPE", "DETAIL"], read_logs())],
+		scroll=flet.ScrollMode.AUTO
+	)], expand=True)
+	event.page.controls[0].controls[2] = table_logs1
+
 	event.page.update()
 
 async def export_logs(event: flet.Event):
@@ -592,6 +624,10 @@ def build_query_page(month = "190001"):
 	)
 
 def build_logs_page():
+	global logs_page, max_logs_page
+	records_count = len(read_logs())
+	max_logs_page = (records_count // 50) + (1 if records_count % 50 else 0)
+
 	button_save_logs = flet.Button(
 		bgcolor="#36618E",
 		color="#FFFFFF",
@@ -612,6 +648,33 @@ def build_logs_page():
 		on_click=export_logs,
 		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
 	)
+	button_previous_page = flet.IconButton(
+		bgcolor="#36618E",
+		icon_color="#FFFFFF",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.ARROW_LEFT,
+		on_click=to_prev_page,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
+	text_page_number = flet.Button(
+		bgcolor="#36618E",
+		color="#FFFFFF",
+		content=f"{logs_page + 1} / {max_logs_page}",
+		expand=True,
+		height=variables["buttonHeight"],
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8)),
+		disabled=True
+	)
+	button_next_page = flet.IconButton(
+		bgcolor="#36618E",
+		icon_color="#FFFFFF",
+		expand=True,
+		height=variables["buttonHeight"],
+		icon=flet.Icons.ARROW_RIGHT,
+		on_click=to_next_page,
+		style=flet.ButtonStyle(shape=flet.RoundedRectangleBorder(radius=8))
+	)
 	table_logs = flet.Row(
 		controls=[build_logs_table(["SL", "TIME", "AMOUNT", "TYPE", "DETAIL"], read_logs())],
 		scroll=flet.ScrollMode.AUTO
@@ -619,6 +682,7 @@ def build_logs_page():
 
 	page_logs = [
 		flet.Row(controls=[button_save_logs, button_export_logs], intrinsic_height=True),
+		flet.Row(controls=[button_previous_page, text_page_number, button_next_page], intrinsic_height=True),
 		flet.ListView([table_logs], expand=True)
 	]
 
