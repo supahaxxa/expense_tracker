@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## v1.1.2 - 2026/08/03
+
+### Added
+
+- Pagination system in the `Logs` page so that the pages don't get too long.
+
 ## v1.1.1 - 2026/05/04
 
 ### Fixed
