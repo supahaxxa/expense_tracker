@@ -13,7 +13,7 @@ Expense Tracker is an open-source application mainly designed for Android to hel
 ## Tech Stack
 
 - **Platform:** Android
-- **Languages:** HTML, CSS, and JavaScript
+- **Languages:** HTML, CSS, and JavaScript [every single line of code generated using `Gemini 3.1 Pro`]
 - **Database:** CSV file
 
 ## Getting Started
